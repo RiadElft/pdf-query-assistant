@@ -77,39 +77,22 @@ def main():
     output_directory = os.path.join(base_directory, 'output')
     os.makedirs(output_directory, exist_ok=True)
 
-    # Load the smaller Sentence Transformer model
+    # Load model
     print("Loading Sentence Transformer model...")
     model = SentenceTransformer('all-MiniLM-L6-v2')
 
-    # Load or create pdf_texts.json
-    output_file = os.path.join(output_directory, 'pdf_texts.json')
-    if os.path.exists(output_file):
-        with open(output_file, 'r', encoding='utf-8') as f:
-            pdf_texts = json.load(f)
-        print("Loaded existing texts from JSON file.")
-    else:
-        pdf_texts = {}
-        print("No existing JSON file found. Starting with empty dictionary.")
-
-    # Extract text from PDFs and update the dictionary
-    new_texts = extract_text_from_pdfs(pdf_directory)
-    pdf_texts.update(new_texts)
-
-    # Save the updated texts to the JSON file
-    with open(output_file, 'w', encoding='utf-8') as f:
-        json.dump(pdf_texts, f, ensure_ascii=False)
-
-    print(f"Extracted text has been saved to {output_file}")
-
+    # Extract text from PDFs
+    pdf_texts = extract_text_from_pdfs(pdf_directory)
+    
     # Prepare data for embedding computation
     paths = list(pdf_texts.keys())
     texts = list(pdf_texts.values())
 
-    # Compute embeddings for all documents
+    # Compute embeddings
     print("Computing embeddings for all documents...")
     embeddings = compute_embeddings(texts, model)
 
-    # Save the embeddings and paths
+    # Save only the necessary files
     print("Saving embeddings and paths...")
     joblib.dump(embeddings, os.path.join(output_directory, 'embeddings.pkl'))
     joblib.dump(paths, os.path.join(output_directory, 'paths.pkl'))
